@@ -13,6 +13,7 @@ public class Main {
         int[] srcImageData;
         int[] destImageYUVData;
         float[] destImageHSVData;
+        double[] destImageLabData;
         int width;
         int height;
 
@@ -28,7 +29,7 @@ public class Main {
 
             destImageYUVData = ColorSpaceConverter.convertRgb2Yuv(srcImageData, width, height);
             destImageHSVData = ColorSpaceConverter.convertRgb2Hsv(srcImageData, width, height);
-
+            destImageLabData = ColorSpaceConverter.convertRgbToLab(srcImageData, width, height);
 
 
         } catch (IOException e) {
