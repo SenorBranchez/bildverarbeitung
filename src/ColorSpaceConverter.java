@@ -36,7 +36,7 @@ public class ColorSpaceConverter {
     static float[] convertRgb2Hsv( int[] srcImage, int width, int height) {
 
         int numOfPixels = width*height;
-        float[] destImage = new float[numOfPixels*4];
+        float[] destImage = new float[numOfPixels*3];
 
         int r;
         int g;
