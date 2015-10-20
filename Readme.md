@@ -1,0 +1,1 @@
+Wichtig! Unter Root Ordner muss /assets/Pit Pattern I etc. liegen. Möchte das ungern auf Github uploaden, darum sollten wir das local machen.
