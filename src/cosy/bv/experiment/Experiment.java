@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /* 
  *
@@ -19,8 +19,8 @@ import java.util.Vector;
 public class Experiment {
 
 	// == CONFIGURATION
-	private static final int NEIGHBORHOOD_SIZE = 3; 
-	private static final int DCT_BLOCKSIZE = 8;
+	public static final int NEIGHBORHOOD_SIZE = 3; 
+	public static final int DCT_BLOCKSIZE = 8;
 	// ================
 	
 	// === VARS
@@ -44,9 +44,6 @@ public class Experiment {
 		
 		// find NEIGHBORHOOD_SIZE-nearest neighbors
 		classifyImage(probingPatient.get((int) Math.random() * probingPatient.size()));
-		
-		
-		
 	}
 
 	/**
@@ -57,9 +54,8 @@ public class Experiment {
 	 */
 	private Pattern classifyImage(ImageData imageData) {
 		
-		Vector probingVector = imageData.getDctVector();
-		int[] nearest = new int[NEIGHBORHOOD_SIZE];
-		
+		ImageVector probingVector = imageData.getDctVector();
+		HashMap<ImageData, Double> neighborhood = new HashMap<ImageData, Double>();
 		
 		// Loop through patients
 		for(Iterator<ArrayList<ImageData>> patientIt = patientMapping.values().iterator(); patientIt.hasNext(); ) {
@@ -67,12 +63,48 @@ public class Experiment {
 			// Loop through pictures of partientIt
 			for(Iterator<ImageData> imageIt = patientIt.next().iterator(); imageIt.hasNext(); ) {
 				
+				// Get the next vector to compare probingVector with
 				ImageData img = imageIt.next();
-				Vector candidateVector = img.getDctVector();				
+				ImageVector candidateVector = img.getDctVector();	
+				
+				// Calculate distance between the vectors and see if it is small enough to 
+				// be in the k-neighborhood
+				double distance = probingVector.distanceTo(candidateVector);
+				
+				if(neighborhood.size() < NEIGHBORHOOD_SIZE) {
+					neighborhood.put(img, distance);
+				}
+				else {
+					for(Entry<ImageData, Double> entry : neighborhood.entrySet()) {
+						
+						if(distance < entry.getValue()) {
+							neighborhood.remove(entry.getKey());
+							neighborhood.put(img, distance);
+							break;
+						}
+					}
+				}
 			}
 		}
 		
-		return null;		
+		
+		//Now that we have found the k-nearest neighbors, look at the most common type
+		int counts[] = new int[6];
+		
+		for(Iterator<ImageData> it =  neighborhood.keySet().iterator(); it.hasNext(); ) {
+			counts[it.next().getPattern().ordinal()]++;
+		}
+		
+		Pattern max = Pattern.PATTERN_1;
+		
+		for(int i = 0; i < counts.length; i++) {
+			
+			if(counts[i] > counts[max.ordinal()]) {
+				max = Pattern.values()[i];
+			}
+		}
+		
+		return max;		
 	}
 
 
@@ -102,8 +134,6 @@ public class Experiment {
 				catch(Exception e) {
 					e.printStackTrace();
 				}
-				
-				
 			}
 		}		
 	}
@@ -154,6 +184,12 @@ public class Experiment {
 		return ret;
 	}
 
+	/**
+	 * Find image with filename imgName in the Pit Pattern directories
+	 * @param imgName
+	 * @return
+	 * @throws Exception
+	 */
 	private String findImageInAssets(String imgName) throws Exception {
 		
 		//Open assets folder

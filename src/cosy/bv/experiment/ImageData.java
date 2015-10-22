@@ -1,12 +1,14 @@
 package cosy.bv.experiment;
 
-import java.util.HashMap;
-import java.util.Vector;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 
 public class ImageData {	
 			
 	private String path = "";
-	private Vector DctVector;
+	private ImageVector DctVector;
 	private Pattern pattern;
 	
 	public ImageData(String path) {
@@ -34,12 +36,28 @@ public class ImageData {
 		System.out.println("Created " + path + " " + pattern.ordinal());
 	}
 	
-	public void setDctVector(Vector vector) {
+	public BufferedImage load() {
+		
+		try {
+			return ImageIO.read(new File(path));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	
+	public void setDctVector(ImageVector vector) {
 		this.DctVector = vector;
 	}
 	
-	public Vector getDctVector() {
+	public ImageVector getDctVector() {
 		return this.DctVector;
 	}
 	
+	public Pattern getPattern() {
+		return this.pattern;
+	}
 }
