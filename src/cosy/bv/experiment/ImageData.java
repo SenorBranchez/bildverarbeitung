@@ -60,4 +60,8 @@ public class ImageData {
 	public Pattern getPattern() {
 		return this.pattern;
 	}
+	
+	public String getPath() {
+		return this.path;
+	}
 }

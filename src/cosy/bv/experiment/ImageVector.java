@@ -1,12 +1,14 @@
 package cosy.bv.experiment;
 
+import java.util.Arrays;
+
 public class ImageVector {
 
 	double[][] data;
 	
-	public ImageVector() {
+	public ImageVector(int size) {
 		
-		data = new double[Experiment.DCT_BLOCKSIZE][Experiment.DCT_BLOCKSIZE]; 
+		data = new double[size][size]; 
 	}
 	
 	/**
@@ -23,5 +25,19 @@ public class ImageVector {
 		}
 		
 		return Math.sqrt(sum);
+	}
+
+	@Override
+	public String toString() {
+		
+		String ret = "";
+		
+		
+		for(int i = 0; i < 5; i++) {
+			
+			ret += Arrays.toString(data[i]) + "\n";
+		}
+
+		return ret;
 	}
 }

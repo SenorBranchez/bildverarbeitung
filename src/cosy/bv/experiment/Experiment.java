@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /* 
  *
@@ -40,10 +39,10 @@ public class Experiment {
 		computeFeatureVectors();
 		
 		// extract one patient randomly (aka the probing patient)
-		ArrayList<ImageData> probingPatient = patientMapping.remove((int) Math.random() * patientMapping.size());
+		ArrayList<ImageData> probingPatientImages = patientMapping.remove((int)(Math.random() * patientMapping.size()));
 		
 		// find NEIGHBORHOOD_SIZE-nearest neighbors
-		classifyImage(probingPatient.get((int) Math.random() * probingPatient.size()));
+		classifyImage(probingPatientImages.get((int)(Math.random() * probingPatientImages.size())));
 	}
 
 	/**
@@ -89,7 +88,7 @@ public class Experiment {
 		
 		
 		//Now that we have found the k-nearest neighbors, look at the most common type
-		int counts[] = new int[6];
+		int counts[] = new int[Pattern.values().length];
 		
 		for(Iterator<ImageData> it =  neighborhood.keySet().iterator(); it.hasNext(); ) {
 			counts[it.next().getPattern().ordinal()]++;
