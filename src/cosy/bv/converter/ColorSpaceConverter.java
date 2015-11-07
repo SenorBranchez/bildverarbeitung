@@ -17,93 +17,154 @@ public class ColorSpaceConverter {
     private static double[] whitePoint = { 95.047f, 100.000f, 108.883f};
 
 
-    public static int[] convertRgb2Yuv(int[] srcImage, int width, int height) {
+    public static YUVImage convertRgbToYuv(RGBImage rgbImage) {
 
-        int numOfPixels = width*height;
-        int[] destImage = new int[numOfPixels*3];
+        int width;
+        int height;
 
-        int r;
-        int g;
-        int b;
+        int tmp_r;
+        int tmp_g;
+        int tmp_b;
+        int tmp_y;
+        int tmp_u;
+        int tmp_v;
 
-        int y;
-        int u;
-        int v;
+        YUVImage yuvImage;
 
-        for( int i = 0; i < numOfPixels; i+=3) {
+        Channel<Integer> r = rgbImage.getChannel("r");
+        Channel<Integer> g = rgbImage.getChannel("g");
+        Channel<Integer> b = rgbImage.getChannel("b");
 
-            r = srcImage[i];
-            g = srcImage[i+1];
-            b = srcImage[i+2];
+        width = r.getWidth();
+        height = r.getHeight();
 
-            y = (int) Math.round( 0.299*r + 0.587*g + 0.114*b );
-            u = (int) Math.round( 0.492 * ( b-y) );
-            v = (int) Math.round( 0.299 * (r-y) );
+        Channel<Integer> y = new Channel<Integer>(width, height);
+        Channel<Integer> u = new Channel<Integer>(width, height);
+        Channel<Integer> v = new Channel<Integer>(width, height);
 
-            destImage[i]  = y;
-            destImage[i+1]  = u;
-            destImage[i+2]  = v;
+        yuvImage = new YUVImage();
+
+
+        for(int i=0; i<width; i++) {
+            for(int j=0; j<height; j++) {
+
+                tmp_r = r.getPixelValue(i,j);
+                tmp_g = g.getPixelValue(i,j);
+                tmp_b = b.getPixelValue(i,j);
+
+                tmp_y = (int) Math.round( 0.299*tmp_r + 0.587*tmp_g + 0.114*tmp_b );
+                tmp_u = (int) Math.round( 0.492 * ( tmp_b - tmp_y ) );
+                tmp_v = (int) Math.round( 0.299 * (tmp_r - tmp_y) );
+
+                y.setPixelValue(i, j, tmp_y);
+                u.setPixelValue(i, j, tmp_u);
+                v.setPixelValue(i, j, tmp_v);
+            }
         }
 
-        return destImage;
+        yuvImage.addChannel("y", y);
+        yuvImage.addChannel("u", u);
+        yuvImage.addChannel("v", v);
+
+        return yuvImage;
     }
 
-    public static float[] convertRgb2Hsv(int[] srcImage, int width, int height) {
+    public static HSVImage convertRgbToHsv(RGBImage rgbImage) {
 
-        int numOfPixels = width*height;
-        float[] destImage = new float[numOfPixels*3];
+        int width;
+        int height;
 
-        int r;
-        int g;
-        int b;
+        int tmp_r;
+        int tmp_g;
+        int tmp_b;
+        float hsv[] = new float[3];
 
-        float[] hsv = new float[3];
+        HSVImage hsvImage;
 
-        for( int i = 0; i < numOfPixels; i+=3) {
+        Channel<Integer> r = rgbImage.getChannel("r");
+        Channel<Integer> g = rgbImage.getChannel("g");
+        Channel<Integer> b = rgbImage.getChannel("b");
 
-            r = srcImage[i];
-            g = srcImage[i+1];
-            b = srcImage[i+2];
+        width = r.getWidth();
+        height = r.getHeight();
 
-            // Note: HSB is the same as HSV
-            Color.RGBtoHSB(r,g,b,hsv);
+        Channel<Float> h = new Channel<Float>(width, height);
+        Channel<Float> s = new Channel<Float>(width, height);
+        Channel<Float> v = new Channel<Float>(width, height);
 
-            destImage[i]  = hsv[0];
-            destImage[i+1]  = hsv[1];
-            destImage[i+2]  = hsv[2];
+        hsvImage = new HSVImage();
 
+        for(int i=0; i<width; i++) {
+            for(int j=0; j<height; j++) {
+
+                tmp_r = r.getPixelValue(i,j);
+                tmp_g = g.getPixelValue(i,j);
+                tmp_b = b.getPixelValue(i,j);
+
+                Color.RGBtoHSB(tmp_r, tmp_g, tmp_b, hsv);
+
+                h.setPixelValue(i, j, hsv[0]);
+                s.setPixelValue(i, j, hsv[1]);
+                v.setPixelValue(i, j, hsv[2]);
+            }
         }
 
-        return destImage;
+        hsvImage.addChannel("h", h);
+        hsvImage.addChannel("s", s);
+        hsvImage.addChannel("v", v);
+
+        return hsvImage;
+
     }
 
-    public static double[] convertRgbToLab(int[] srcImage, int width, int height) {
+    public static LABImage convertRgbToLab(RGBImage rgbImage) {
 
-        int numOfPixels = width*height;
-        double[] destImage = new double[numOfPixels*3];
+        int width;
+        int height;
 
-        int r;
-        int g;
-        int b;
+        int tmp_r;
+        int tmp_g;
+        int tmp_b;
 
         double[] lab = new double[3];
 
-        for( int i = 0; i < numOfPixels; i+=3) {
+        LABImage labImage;
 
-            r = srcImage[i];
-            g = srcImage[i+1];
-            b = srcImage[i+2];
+        Channel<Integer> r = rgbImage.getChannel("r");
+        Channel<Integer> g = rgbImage.getChannel("g");
+        Channel<Integer> b = rgbImage.getChannel("b");
 
-            lab = xyzToLab(rgbToXyz(r, g, b));
+        width = r.getWidth();
+        height = r.getHeight();
 
-            destImage[i] = lab[0];
-            destImage[i+1] = lab[1];
-            destImage[i+2] = lab[2];
+        Channel<Double> cielab_l = new Channel<Double>(width, height);
+        Channel<Double> cielab_a = new Channel<Double>(width, height);
+        Channel<Double> cielab_b = new Channel<Double>(width, height);
+
+        labImage = new LABImage();
+
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+
+                tmp_r = r.getPixelValue(i, j);
+                tmp_g = g.getPixelValue(i, j);
+                tmp_b = b.getPixelValue(i, j);
+
+                lab = xyzToLab(rgbToXyz(tmp_r, tmp_g, tmp_b));
+
+                cielab_l.setPixelValue(i, j, lab[0]);
+                cielab_a.setPixelValue(i, j, lab[1]);
+                cielab_b.setPixelValue(i, j, lab[2]);
+            }
         }
 
-        return destImage;
-    }
+        labImage.addChannel("l", cielab_l);
+        labImage.addChannel("a", cielab_a);
+        labImage.addChannel("b", cielab_b);
 
+        return labImage;
+    }
 
     /**
      *

@@ -21,17 +21,12 @@ public class Main {
         try {
 
             srcImage = ImageIO.read( new File(filename) );
-            output = new File("out.jpeg");
 
-            width = srcImage.getWidth();
-            height = srcImage.getHeight();
-
-            srcImageData = srcImage.getRGB(0, 0, width, height, null, 0, width);
-
-            destImageYUVData = ColorSpaceConverter.convertRgb2Yuv(srcImageData, width, height);
-            destImageHSVData = ColorSpaceConverter.convertRgb2Hsv(srcImageData, width, height);
-            destImageLabData = ColorSpaceConverter.convertRgbToLab(srcImageData, width, height);
-
+            RGBImage rgbImage = new RGBImage(filename);
+            YUVImage yuvImage = ColorSpaceConverter.convertRgbToYuv(rgbImage);
+            HSVImage hsvImage = ColorSpaceConverter.convertRgbToHsv(rgbImage);
+            LABImage labImage = ColorSpaceConverter.convertRgbToLab(rgbImage);
+            System.out.println(labImage.toString());
 
         } catch (IOException e) {
             System.err.print("File " + filename + " not found");
