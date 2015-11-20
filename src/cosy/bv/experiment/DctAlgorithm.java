@@ -1,85 +1,59 @@
 package cosy.bv.experiment;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-
 public class DctAlgorithm {
 
-	public static void compute(ImageData imgData, int blocksize) throws Exception {
-
-		int[][] pixels = convertTo2D(imgData.load());
-		ImageVector ret = new ImageVector(pixels.length);
+	public static ImageVector compute(double[][] block, int blocksize) {
+		
+//		for(double[] i : block) {
+//			System.out.print("\n");
+//			for(double j : i){
+//				System.out.print(j + ", ");
+//			}
+//		}
+		
+		
+		ImageVector ret = new ImageVector(block.length);
 		
 		//Nested loop for calculating the colums		
-		for(int row = 0; row < pixels.length; row++) {
-			dct1D(pixels[row], ret.data[row]);			
+		for(int row = 0; row < block.length; row++) {
+			ret.data[row] = dct1D(block[row]);			
 		}
 		
-		int[][] transposed = new int[pixels.length][pixels.length];
+		double[][] transposed = new double[block.length][block.length];
 		
-		for(int i = 0; i < pixels.length; i++) {
-			for(int j = 0; j < pixels.length; j++) {
-				transposed[i][j] = (int) ret.data[j][i];
+		for(int i = 0; i < block.length; i++) {
+			for(int j = 0; j < block.length; j++) {
+				transposed[i][j] = ret.data[j][i];
 			}
 		}
 
 		//Nested loop for calculating the colums		
-		for(int row = 0; row < pixels.length; row++) {
-			dct1D(transposed[row], ret.data[row]);			
+		for(int row = 0; row < block.length; row++) {
+			ret.data[row] = dct1D(transposed[row]);			
 		}
 		
+//		System.out.println(ret);
 		
-		System.out.println(ret);
-		imgData.setDctVector(ret);
+		return ret;
 	}
 
-	private static void dct1D(int[] input, double[] output) {
-				
-		for(int offset = 0; offset * Experiment.DCT_BLOCKSIZE < input.length; offset++) {
+	private static double[] dct1D(double[] input) {
+			
+		double[] ret = new double[input.length];
 		
-			for(int i = 0; i < Experiment.DCT_BLOCKSIZE; i++) {
-				
-				int sum = 0;
-				
-				for(int x = 0; x < Experiment.DCT_BLOCKSIZE; x++) {
-					
-					//int value = (input[i] >> 16) & 0xFF;
-					sum +=  input[i] * Math.cos(Math.PI / Experiment.DCT_BLOCKSIZE * (x + 0.5) * i);
-				}
-				
-				if(i == 0) {
-					sum *= 1.0 / Math.sqrt(2.0);
-				}
-				
-				output[i * offset] = sum / 2;			
+		for(int k = 0; k < input.length; k++) {
+			
+			Double sum = 0.0;
+			Double cu = (k == 0) ? Math.sqrt(2) : 0;
+			
+			
+			for(int n = 0; n < input.length; n++) {
+				sum += input[n] * Math.cos(((Math.PI / input.length) * (n + 0.5) * k) );
 			}
+			
+			ret[k] = sum;
 		}
-	}
-	
-	
-	private static int[][] convertTo2D(BufferedImage image) {
-
-		final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-		final int width = image.getWidth();
-		final int height = image.getHeight();
-
-		int[][] result = new int[height][width];
-
-		final int pixelLength = 3;
-		for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
-			int argb = 0;
-//			argb += -16777216; // 255 alpha
-//			argb += ((int) pixels[pixel] & 0xff); // blue
-//			argb += (((int) pixels[pixel + 1] & 0xff) << 8); // green
-			argb += (((int) pixels[pixel + 2] & 0xff) << 16); // red
-			result[row][col] = argb;
-			col++;
-			if (col == width) {
-				col = 0;
-				row++;
-			}
-		}
-
-		return result;
+		
+		return ret;		
 	}
 }

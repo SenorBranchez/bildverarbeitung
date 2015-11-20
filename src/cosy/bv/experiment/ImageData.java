@@ -5,11 +5,15 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import cosy.bv.converter.RGBImage;
+
 public class ImageData {	
 			
 	private String path = "";
 	private ImageVector DctVector;
 	private Pattern pattern;
+	
+	public RGBImage rgbImg = null;
 	
 	public ImageData(String path) {
 		this.path = path;
@@ -39,7 +43,7 @@ public class ImageData {
 	public BufferedImage load() {
 		
 		try {
-			return ImageIO.read(new File(path));
+			rgbImg = new RGBImage(path); 
 		}
 		catch(Exception e) {
 			e.printStackTrace();

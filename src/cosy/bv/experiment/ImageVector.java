@@ -11,6 +11,11 @@ public class ImageVector {
 		data = new double[size][size]; 
 	}
 	
+	public ImageVector(double[][] data) {
+		this.data = data;
+	}
+	
+	
 	/**
 	 * Calculate the euclidean distance between two vectors
 	 */
@@ -33,11 +38,31 @@ public class ImageVector {
 		String ret = "";
 		
 		
-		for(int i = 0; i < 5; i++) {
+		for(int i = 0; i < data.length; i++) {
 			
-			ret += Arrays.toString(data[i]) + "\n";
+			ret += data[i].length + Arrays.toString(data[i]) + "\n";
 		}
 
+		System.out.print("\n\n");
+		
 		return ret;
+	}
+	
+	public void addImageVector(ImageVector imageVector) {
+		for(int i = 0; i < data.length; i++) {
+			for(int j = 0; j < data[0].length; j++) {
+				data[i][j] += imageVector.data[i][j];
+			}
+		}
+	}
+	
+	public void simpleAverage() {
+		int n = data.length * data[0].length;
+		
+		for(int i = 0; i < data.length; i++){
+			for(int j = 0; j < data[0].length; j++) {
+				data[i][j] = data[i][j] / n;
+			}
+		}
 	}
 }
