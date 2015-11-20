@@ -59,5 +59,16 @@ public class Channel<T> {
 
         return builder.toString();
     }
+
+    public T[][] toArray() {
+        Object[][] array = new  Object[pixels.size()][];
+        for (int i = 0; i < pixels.size(); i++) {
+            ArrayList<T> row = pixels.get(i);
+            array[i] = row.toArray(new Object[row.size()]);
+        }
+
+        return (T[][]) array;
+
+    }
 }
 
