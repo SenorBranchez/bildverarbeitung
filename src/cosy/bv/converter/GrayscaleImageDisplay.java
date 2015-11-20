@@ -15,16 +15,37 @@ public class GrayscaleImageDisplay extends JPanel{
 
     public GrayscaleImageDisplay() {
 
+        image = new BufferedImage( 256, 256, BufferedImage.TYPE_BYTE_GRAY);
+
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(image, 0, 0, null); // see javadoc for more info on the parameters            
+        g.drawImage(image, 0, 0, null); // see javadoc for more info on the parameters
     }
 
 
     public void setChannel(Channel c) {
+
+        Object channel[][] = c.toArray();
+
+
+        for(int x = 0; x < channel.length; x++) {
+            for(int y = 0; y < channel[x].length; y++) {
+                Integer rgb = (Integer)channel[x][y]<<16 | (Integer)channel[x][y] << 8 | (Integer)channel[x][y];
+                image.setRGB(x, y, rgb);
+            }
+        }
+
+
+        File outputfile = new File("gray.jpg");
+        try {
+            ImageIO.write(image, "jpg", outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 }

@@ -10,11 +10,15 @@ public class Main {
     public static void main(String [] args) {
 
         BufferedImage srcImage;
-        JFrame mainFrame;
+        JFrame mainFrameR;
+        JFrame mainFrameG;
+        JFrame mainFrameB;
 
-        GrayscaleImageDisplay display;
+        GrayscaleImageDisplay displayR;
+        GrayscaleImageDisplay displayG;
+        GrayscaleImageDisplay displayB;
         File output;
-        String filename = "test.jpg";
+        String filename = "akh0001-cut-1112629217893.png";
         int[] srcImageData;
         int[] destImageYUVData;
         float[] destImageHSVData;
@@ -23,13 +27,26 @@ public class Main {
         int height;
 
 
-        mainFrame = new JFrame();
-        display = new GrayscaleImageDisplay();
+        mainFrameR = new JFrame();
+        mainFrameG = new JFrame();
+        mainFrameB = new JFrame();
 
-        mainFrame.setSize(800,600);
-        mainFrame.add(display);
+        displayR = new GrayscaleImageDisplay();
+        displayG = new GrayscaleImageDisplay();
+        displayB = new GrayscaleImageDisplay();
 
-        mainFrame.setVisible(true);
+        mainFrameR.setSize(256, 256);
+        mainFrameG.setSize(256, 256);
+        mainFrameB.setSize(256, 256);
+
+        mainFrameR.setTitle("Channel R");
+        mainFrameG.setTitle("Channel G");
+        mainFrameB.setTitle("Channel B");
+
+
+        mainFrameR.setVisible(true);
+        mainFrameG.setVisible(true);
+        mainFrameB.setVisible(true);
 
 
 
@@ -38,7 +55,19 @@ public class Main {
             srcImage = ImageIO.read( new File(filename) );
 
             RGBImage rgbImage = new RGBImage(filename);
-            
+
+            displayR.setChannel(rgbImage.getChannel("r"));
+            displayG.setChannel(rgbImage.getChannel("g"));
+            displayB.setChannel(rgbImage.getChannel("b"));
+
+            mainFrameR.add(displayR);
+            mainFrameG.add(displayG);
+            mainFrameB.add(displayB);
+
+            mainFrameR.repaint();
+            mainFrameB.repaint();
+            mainFrameG.repaint();
+
 
             //YUVImage yuvImage = ColorSpaceConverter.convertRgbToYuv(rgbImage);
             //HSVImage hsvImage = ColorSpaceConverter.convertRgbToHsv(rgbImage);
