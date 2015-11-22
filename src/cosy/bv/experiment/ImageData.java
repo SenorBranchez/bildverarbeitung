@@ -1,10 +1,10 @@
 package cosy.bv.experiment;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.util.HashMap;
 
-import javax.imageio.ImageIO;
-
+import cosy.bv.converter.ColorSpaceConverter;
+import cosy.bv.converter.Image;
 import cosy.bv.converter.RGBImage;
 
 public class ImageData {	
@@ -13,7 +13,8 @@ public class ImageData {
 	private ImageVector DctVector;
 	private Pattern pattern;
 	
-	public RGBImage rgbImg = null;
+	public HashMap<String, Image> colorspaces = new HashMap<String, Image>();
+	public HashMap<String, ImageVector> featureVectors = new HashMap<String, ImageVector>();
 	
 	public ImageData(String path) {
 		this.path = path;
@@ -36,14 +37,18 @@ public class ImageData {
 		else if(path.contains("Pit Pattern V/")) {
 			pattern = Pattern.PATTERN_5;
 		}
-		
-		System.out.println("Created " + path + " " + pattern.ordinal());
 	}
 	
 	public BufferedImage load() {
 		
 		try {
-			rgbImg = new RGBImage(path); 
+			RGBImage rgbImg = new RGBImage(path);
+			
+			colorspaces.put("rgb", rgbImg);
+//			colorspaces.put("hsv", ColorSpaceConverter.convertRgbToHsv(rgbImg));
+//			colorspaces.put("lab", ColorSpaceConverter.convertRgbToLab(rgbImg));
+//			colorspaces.put("yuv", ColorSpaceConverter.convertRgbToYuv(rgbImg));
+			
 		}
 		catch(Exception e) {
 			e.printStackTrace();

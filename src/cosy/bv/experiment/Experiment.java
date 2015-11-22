@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import cosy.bv.converter.Channel;
+import cosy.bv.converter.Image;
 
 /* 
  *
@@ -32,20 +36,67 @@ public class Experiment {
 	// === METHODS
 	public Experiment() {
 
+		System.out.println("1.) Read Mapping");
+		
 		// retrieve image paths
 		patientMapping = readPatientMapping();
+		
+		System.out.println("2.) Calculate Feature Vectors");
+		
+		// calculate feature vector for every imagee
+		// Loop through patients
+		for(Iterator<ArrayList<ImageData>> itPatient = patientMapping.values().iterator(); itPatient.hasNext();) {
 
-		// calculate feature vector for every image
-		computeFeatureVectors();
+			ArrayList<ImageData> imageData = itPatient.next();
 
-		while(true) {
-			// extract one patient randomly (aka the probing patient)
-			ArrayList<ImageData> probingPatientImages = patientMapping.remove((int)(Math.random() * patientMapping.size()));
-	
-			// find NEIGHBORHOOD_SIZE-nearest neighbors
-			Pattern result = classifyImage(probingPatientImages.get((int)(Math.random() * (probingPatientImages.size()-1))));
+			// Loop through images of the current patient
+			for(Iterator<ImageData> itImageData = imageData.iterator(); itImageData.hasNext();) {
+				
+				computeFeatureVectors(itImageData.next());
+			}
+		}
+				
+		System.out.println("3.) Starting Experiments");
+		
+		int n = 0;
+		HashMap<String, Integer> counts = new HashMap<String, Integer>();
+				
+		while(n < 100) {
 			
-			System.out.println("===================\nRESULT: " + result.name());
+			int patientNr = (int)(1 + Math.random() * patientMapping.size());
+			
+			// extract one patient randomly (aka the probing patient)
+			ArrayList<ImageData> probingPatientImages = patientMapping.remove(patientNr);
+	
+			int imageNr = (int)(Math.random() * (probingPatientImages.size()));
+			ImageData probingImage = probingPatientImages.get(imageNr);
+			
+			for(String channel : probingImage.featureVectors.keySet()) {
+				
+				// find NEIGHBORHOOD_SIZE-nearest neighbors
+				Pattern result = classifyImage(probingImage, channel);
+				
+				System.out.println(result.name() + " " + probingImage.getPattern().name());
+				
+				if(result.name().equals(probingImage.getPattern().name())) {
+					
+					if(! counts.containsKey(channel)) {
+						counts.put(channel, 0);
+					}
+					
+					counts.put(channel, counts.get(channel) + 1);
+				}
+			}
+		
+			patientMapping.put(patientNr, probingPatientImages);
+			
+			n++;
+		}
+		
+		System.out.println("\n\n4.) Finished");
+		
+		for(Map.Entry<String, Integer> res : counts.entrySet()) {
+			System.out.println(res.getKey() + " " + (float) res.getValue() / n);
 		}
 	}
 
@@ -55,10 +106,9 @@ public class Experiment {
 	 * 
 	 * @return The classification
 	 */
-	private Pattern classifyImage(ImageData imageData) {
+	private Pattern classifyImage(ImageData imageData, String channelName) {
 
-		System.out.println("===================\nWANT: " + imageData.getPattern().name());
-		ImageVector probingVector = imageData.getDctVector();
+		ImageVector probingVector = imageData.featureVectors.get(channelName);
 		HashMap<ImageData, Double> neighborhood = new HashMap<ImageData, Double>();
 
 		// Loop through patients
@@ -69,7 +119,7 @@ public class Experiment {
 
 				// Get the next vector to compare probingVector with
 				ImageData img = imageIt.next();
-				ImageVector candidateVector = img.getDctVector();	
+				ImageVector candidateVector = img.featureVectors.get(channelName);
 
 				// Calculate distance between the vectors and see if it is small enough to 
 				// be in the k-neighborhood
@@ -111,61 +161,65 @@ public class Experiment {
 		return max;		
 	}
 
-
-
 	/**
 	 * 1. Applies DCT to every image in the mapping
 	 * 2. Calculate statistics  
 	 * 3. profit = feature vector of the image
 	 * 
 	 */
-	private void computeFeatureVectors() {
+	private void computeFeatureVectors(ImageData itImageData) {
 
-		// Loop through patients
-		for(Iterator<ArrayList<ImageData>> itPatient = patientMapping.values().iterator(); itPatient.hasNext();) {
-
-			ArrayList<ImageData> imageData = itPatient.next();
-
-			// Loop through images of the current patient
-			for(Iterator<ImageData> itImageData = imageData.iterator(); itImageData.hasNext();) {
-
-				ImageData currentImage = itImageData.next();
-
-				// Apply DCT to 8x8 block					
-				currentImage.load();
-
-				Object[][] data = currentImage.rgbImg.getChannel("b").toArray();
-				ImageVector[][] coefficients = new ImageVector[256/DCT_BLOCKSIZE][256/DCT_BLOCKSIZE];
-				ImageVector featureVector = new ImageVector(DCT_BLOCKSIZE);					
-
-				for(int y = 0; y < 256; y += DCT_BLOCKSIZE) {
-					for(int x = 0; x < 256; x += DCT_BLOCKSIZE) {
-
+		ImageData currentImage = itImageData;
+	
+		// Apply DCT to 8x8 block					
+		currentImage.load();
+		
+		for(Map.Entry<String, Image> entry : currentImage.colorspaces.entrySet()) {
+			
+			Image theImage = entry.getValue();
+			
+			for(Map.Entry<String, Channel> channel : theImage.getChannels().entrySet()) {
+			
+				Channel<Double> theChannel = channel.getValue();
+				
+				Object[][] data = theChannel.toArray();
+				ImageVector[][] coefficients = new ImageVector[data.length/DCT_BLOCKSIZE][data.length/DCT_BLOCKSIZE];
+	
+				for(int y = 0; y < data.length; y += DCT_BLOCKSIZE) {
+					for(int x = 0; x < data[0].length; x += DCT_BLOCKSIZE) {
+	
 						double[][] block = new double[DCT_BLOCKSIZE][DCT_BLOCKSIZE];
-
+	
 						for(int i = 0; i < DCT_BLOCKSIZE; i++) {
-
+	
 							double[] row = new double[DCT_BLOCKSIZE];
-
+	
 							for(int j = 0; j < DCT_BLOCKSIZE; j++) {
-
-								row[j] = ((Integer)data[y + i][x + j]).doubleValue();
-
+								
+								if(data[y + i][x + j] instanceof Integer) {
+									row[j] = ((Integer) data[y + i][x + j]).doubleValue();
+								}
+								else if(data[y + i][x + j] instanceof Float) {
+									row[j] = ((Float) data[y + i][x + j]).doubleValue();
+								}
 							}
-
+	
 							block[i] = row;
 						}
-
-						//System.out.println("row: " + y / DCT_BLOCKSIZE + "col: " + x / DCT_BLOCKSIZE);
-						featureVector.addImageVector(DctAlgorithm.compute(block, DCT_BLOCKSIZE));							
+	
+						ImageVector coeffBlock = DctAlgorithm.compute(block, DCT_BLOCKSIZE);
+						Statistics.normalize(coeffBlock);
+						//System.out.println(coeffBlock);
+						
+						coefficients[y / DCT_BLOCKSIZE][x / DCT_BLOCKSIZE] = coeffBlock;
 					}
 				}
 				
-				featureVector.simpleAverage();
-				currentImage.setDctVector(featureVector);
-				//System.out.println(featureVector);
+				currentImage.featureVectors.put(entry.getKey() + "_" + channel.getKey(), Statistics.simpleAverage(coefficients));
 			}
-		}		
+			
+			currentImage.colorspaces.remove(entry.getKey());
+		}
 	}
 
 

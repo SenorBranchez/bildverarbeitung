@@ -40,7 +40,7 @@ public class ImageVector {
 		
 		for(int i = 0; i < data.length; i++) {
 			
-			ret += data[i].length + Arrays.toString(data[i]) + "\n";
+			ret += Arrays.toString(data[i]) + "\n";
 		}
 
 		System.out.print("\n\n");
@@ -52,16 +52,6 @@ public class ImageVector {
 		for(int i = 0; i < data.length; i++) {
 			for(int j = 0; j < data[0].length; j++) {
 				data[i][j] += imageVector.data[i][j];
-			}
-		}
-	}
-	
-	public void simpleAverage() {
-		int n = data.length * data[0].length;
-		
-		for(int i = 0; i < data.length; i++){
-			for(int j = 0; j < data[0].length; j++) {
-				data[i][j] = data[i][j] / n;
 			}
 		}
 	}

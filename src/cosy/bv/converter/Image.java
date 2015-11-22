@@ -35,5 +35,9 @@ public abstract class Image {
         return builder.toString();
     }
 
-
+    public HashMap<String, Channel> getChannels() {
+    	return channels;    	
+    }
+    
+    public abstract String[] getChannelNames();
 }

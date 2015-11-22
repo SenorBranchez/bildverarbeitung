@@ -35,6 +35,11 @@ public class RGBImage extends Image {
         addChannel("b", b);
 
     }
+    
+    public String[] getChannelNames() {
+    	String[] ret = {"r", "g", "b"};
+    	return ret;
+    }
 
 
 }

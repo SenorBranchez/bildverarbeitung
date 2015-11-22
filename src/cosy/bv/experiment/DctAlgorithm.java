@@ -2,6 +2,8 @@ package cosy.bv.experiment;
 
 public class DctAlgorithm {
 
+	private static double CX = 1/Math.sqrt(2);
+	
 	public static ImageVector compute(double[][] block, int blocksize) {
 		
 //		for(double[] i : block) {
@@ -32,8 +34,6 @@ public class DctAlgorithm {
 			ret.data[row] = dct1D(transposed[row]);			
 		}
 		
-//		System.out.println(ret);
-		
 		return ret;
 	}
 
@@ -44,14 +44,14 @@ public class DctAlgorithm {
 		for(int k = 0; k < input.length; k++) {
 			
 			Double sum = 0.0;
-			Double cu = (k == 0) ? Math.sqrt(2) : 0;
+			Double cu = (k == 0) ? CX : 1;
 			
 			
 			for(int n = 0; n < input.length; n++) {
 				sum += input[n] * Math.cos(((Math.PI / input.length) * (n + 0.5) * k) );
 			}
 			
-			ret[k] = sum;
+			ret[k] = Math.floor(0.5 * cu * sum);
 		}
 		
 		return ret;		
